@@ -5,8 +5,8 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     public Text  TowerText;
-    private const string TowerConstPart = "Wieżyczki: ";
-    private StringBuilder StringBuilder;
+    private const string TOWERCONSTSTRING = "Wieżyczki: ";
+    private StringBuilder _stringBuilder;
 
     private static UIManager singleton;
     public static UIManager Get()
@@ -17,14 +17,14 @@ public class UIManager : MonoBehaviour
     private void Awake()
     {
         singleton = this;
-        StringBuilder = new StringBuilder();
+        _stringBuilder = new StringBuilder();
     }
 
     public void UpdateTowerText(int towerCount)
     {
-        StringBuilder.Clear();
-        StringBuilder.Append(TowerConstPart);
-        StringBuilder.Append(towerCount);
-        TowerText.text = StringBuilder.ToString();
+        _stringBuilder.Clear();
+        _stringBuilder.Append(TOWERCONSTSTRING);
+        _stringBuilder.Append(towerCount);
+        TowerText.text = _stringBuilder.ToString();
     }
 }

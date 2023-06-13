@@ -2,12 +2,20 @@
 
 public class Projectile : MonoBehaviour
 {
-    private const float MinProjectileLifeTime = 0.25f;
-    private const float MaxProjectileLifeTime = 1f;
+    [SerializeField]
+    private Rigidbody2D _rigidBody;
+
+    private const float MIN_PROCJECTILE_LIFE_TIME = 0.25f;
+    private const float MAX_PROCJECTILE_LIFE_TIME = 1f;
+
+    public Rigidbody2D Rigidbody
+    {
+        get { return _rigidBody; }
+    }
 
     private void OnEnable()
     {
-        Invoke(nameof(ProcjectileDeath), Random.Range(MinProjectileLifeTime, MaxProjectileLifeTime));
+        Invoke(nameof(ProcjectileDeath), Random.Range(MIN_PROCJECTILE_LIFE_TIME, MAX_PROCJECTILE_LIFE_TIME));
     }
 
     private void ProcjectileDeath()
@@ -19,8 +27,8 @@ public class Projectile : MonoBehaviour
             {
                 tower.InvokeRotatingAndShooting();
             }
-            TowerManager.Get().ActiveBullets.Remove(gameObject);
-            TowerManager.Get().InactiveBullets.Add(gameObject);
+            TowerManager.Get().ActiveBullets.Remove(this);
+            TowerManager.Get().InactiveBullets.Add(this);
             gameObject.SetActive(false);
         }
 

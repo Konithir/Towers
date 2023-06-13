@@ -3,37 +3,47 @@ using UnityEngine;
 
 public class Tower : MonoBehaviour
 {
+    //[SerializeField]//Can't drag and drop unfortunatelly
+    private TowerManager _towerManager;
+
+    [SerializeField]
+    private SpriteRenderer _spriteRenderer;
+
     public GameObject Projectile;
     public const int MaxAmmoCounter = 12;
     public int AmmoCounter = 12;
-    public const float BulletSpeed = 4;
+    public const float BULLET_SPEED = 4;
 
     public const int MinTowerRotation = 15;
     public const int MaxTowerRotation = 45;
     public const float TowerRotationCooldown = 0.5f;
     public const float TowerInitialCooldown = 6f;
 
+    private Projectile _collidedProjectile;
+
     #region private
 
     private void Awake()
     {
-        for(int i = 0; i < MaxAmmoCounter/3; i++)
+        _towerManager = TowerManager.Get();
+
+        for (int i = 0; i < MaxAmmoCounter/3; i++)
         {
             var bullet = Instantiate(Projectile, transform.position, Quaternion.identity);
-            bullet.transform.SetParent(TowerManager.Get().ProjectilesRoot.transform);
+            bullet.transform.SetParent(_towerManager.ProjectilesRoot.transform);
             bullet.SetActive(false);
-            bullet.AddComponent<Projectile>();
-            TowerManager.Get().InactiveBullets.Add(bullet);
+            _towerManager.InactiveBullets.Add(bullet.GetComponent<Projectile>());
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         CancelInvoke();
-        TowerManager.Get().TowerDestroyedUpdateText();
+        _towerManager.TowerDestroyedUpdateText();
         collision.gameObject.SetActive(false);
-        TowerManager.Get().ActiveBullets.Remove(collision.gameObject);
-        TowerManager.Get().InactiveBullets.Add(collision.gameObject);
+        _collidedProjectile = collision.GetComponent<Projectile>();
+        _towerManager.ActiveBullets.Remove(_collidedProjectile);
+        _towerManager.InactiveBullets.Add(_collidedProjectile);
         gameObject.SetActive(false);
     }
 
@@ -43,9 +53,9 @@ public class Tower : MonoBehaviour
         ChangeColor(Color.red);
         AmmoCounter--;
         var projectile = GetAndActivateInactiveBullet();
-        projectile.transform.position = transform.position + transform.up;
-        projectile.SetActive(true);
-        projectile.GetComponent<Rigidbody2D>().velocity = gameObject.transform.up * BulletSpeed;
+        projectile.gameObject.transform.position = transform.position + transform.up;
+        projectile.gameObject.SetActive(true);
+        projectile.Rigidbody.velocity = gameObject.transform.up * BULLET_SPEED;
         if(AmmoCounter <= 0)
         {
             CancelInvoke();
@@ -53,11 +63,11 @@ public class Tower : MonoBehaviour
         }
     }
 
-    private GameObject GetAndActivateInactiveBullet()
+    private Projectile GetAndActivateInactiveBullet()
     {
-        GameObject bullet = TowerManager.Get().InactiveBullets[0];
-        TowerManager.Get().InactiveBullets.RemoveAt(0);
-        TowerManager.Get().ActiveBullets.Add(bullet);
+        Projectile bullet = _towerManager.InactiveBullets[0];
+        _towerManager.InactiveBullets.RemoveAt(0);
+        _towerManager.ActiveBullets.Add(bullet);
         return bullet;
     }
 
@@ -67,26 +77,25 @@ public class Tower : MonoBehaviour
         Fire();
     }
 
-    private IEnumerator ProcjectileDeath(GameObject bullet, float time)
+    private IEnumerator ProcjectileDeath(Projectile bullet, float time)
     {
         yield return new WaitForSeconds(time);
-        if(bullet.activeInHierarchy)
+        if(bullet.gameObject.activeInHierarchy)
         {
-            var tower = TowerManager.Get().SpawnTower(bullet.transform.position);
+            var tower = _towerManager.SpawnTower(bullet.transform.position);
             if(tower)
             {
                 tower.InvokeRotatingAndShooting();
             }
-            TowerManager.Get().ActiveBullets.Remove(bullet);
-            TowerManager.Get().InactiveBullets.Add(bullet);
-            bullet.SetActive(false);
-        }
-      
+            _towerManager.ActiveBullets.Remove(bullet);
+            _towerManager.InactiveBullets.Add(bullet);
+            bullet.gameObject.SetActive(false);
+        }   
     }
 
     private void ChangeColor(Color color)
     {
-        gameObject.GetComponent<SpriteRenderer>().color = color;
+        _spriteRenderer.color = color;
     }
 
     #endregion
@@ -96,7 +105,7 @@ public class Tower : MonoBehaviour
     {
         CancelInvoke();
         ChangeColor(Color.white);
-        if (TowerManager.Get().TowerCount != 1 && !TowerManager.Get().EndGameLimitReached)
+        if (_towerManager.TowerCount != 1 && !_towerManager.EndGameLimitReached)
         {
             InvokeRepeating(nameof(Rotate), TowerInitialCooldown, TowerRotationCooldown);
         }

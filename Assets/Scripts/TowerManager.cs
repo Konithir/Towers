@@ -12,20 +12,20 @@ public class TowerManager : MonoBehaviour
     public const int MaxTowerCount = 100;
 
     public List<Tower> ListOfTowers = new List<Tower>();
-    public List<GameObject> InactiveBullets = new List<GameObject>();
-    public List<GameObject> ActiveBullets = new List<GameObject>();
+    public List<Projectile> InactiveBullets = new List<Projectile>();
+    public List<Projectile> ActiveBullets = new List<Projectile>();
 
-    private static TowerManager singleton;
+    private static TowerManager _singleton;
     public static TowerManager Get()
     {
-        return singleton;
+        return _singleton;
     }
 
     #region private
 
     private void Awake()
     {
-        singleton = this;
+        _singleton = this;
     }
 
     private void Start()
